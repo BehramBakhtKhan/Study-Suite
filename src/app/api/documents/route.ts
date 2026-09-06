@@ -83,7 +83,9 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Validation: File extension & size limit (5MB)
-    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    const isPdf =
+      file.type === "application/pdf" ||
+      file.name.toLowerCase().endsWith(".pdf");
     if (!isPdf) {
       return NextResponse.json(
         { error: "Only PDF files with extension .pdf are supported" },
@@ -102,11 +104,11 @@ export async function POST(req: NextRequest) {
     // 2. Extract raw text from PDF buffer
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    let extractedText = "";
+    let rawText = "";
 
     try {
       const parsedPdf = await pdf(buffer);
-      extractedText = parsedPdf.text ? parsedPdf.text.trim() : "";
+      rawText = parsedPdf.text ? parsedPdf.text.trim() : "";
     } catch (parseErr) {
       console.error("PDF Parsing Error:", parseErr);
       return NextResponse.json(
@@ -115,12 +117,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!extractedText) {
+    if (!rawText) {
       return NextResponse.json(
         { error: "The PDF contains no readable text content" },
         { status: 422 }
       );
     }
+
+    // Strip PostgreSQL-incompatible null bytes (\u0000) from extracted text
+    const extractedText = rawText.replace(/\0/g, "");
 
     // 3. Generate Normalized Text Hash (Ignores spaces, punctuation, case & file title)
     const normalizedText = extractedText
@@ -144,14 +149,16 @@ export async function POST(req: NextRequest) {
     if (existingDoc) {
       console.log("Duplicate Document Detected...");
       const existingCharCount = existingDoc.extractedText.length;
-      const lengthDifference = Math.abs(existingCharCount - incomingCharCount) / existingCharCount;
+      const lengthDifference =
+        Math.abs(existingCharCount - incomingCharCount) / existingCharCount;
 
       // If text hash matches OR character count is within 5% range (prevents partial upload false positives)
       if (existingDoc.textHash === textHash || lengthDifference < 0.05) {
         return NextResponse.json(
           {
             document: existingDoc,
-            message: "Duplicate document detected. Retrieved existing version.",
+            message:
+              "Duplicate document detected. Retrieved existing version.",
           },
           { status: 200 }
         );
@@ -177,9 +184,10 @@ export async function POST(req: NextRequest) {
       .replace(/\n\s*\n/g, "\n")
       .trim();
 
-    const contentSample = cleanedText.length > 10000
-      ? cleanedText.slice(0, 10000)
-      : cleanedText;
+    const contentSample =
+      cleanedText.length > 10000
+        ? cleanedText.slice(0, 10000)
+        : cleanedText;
 
     if (apiKey) {
       try {
@@ -187,20 +195,21 @@ export async function POST(req: NextRequest) {
 
         const response = await ai.models.generateContent({
           model: "gemini-3.6-flash",
-          contents: `You are an expert study assistant. Summarize the following document excerpt for a student.
-
-Guidelines:
-1. Maximum Length: Strictly under 250 words total.
-2. Language: Use simple, plain English without unnecessary jargon.
-3. Formatting: 1-2 sentence overview followed by plain dash bullets (- ). Do NOT use bolding, asterisks (* or **), markdown headers (#), or extra markup.
-4. Section Context: Preserve chapter numbers or main topic headings at the start of each bullet point (e.g., "- Chapter 1 (Basic Values): ...") if any.
-5. Focus: Capture essential takeaways concisely without fluff.
-
-Document Text:
-${contentSample}`,
+          contents: `You are an expert study assistant. Summarize the following document excerpt for a student in detail.
+        
+        Guidelines:
+        1. Maximum Length: Under 450 words total. Provide a detailed, comprehensive summary.
+        2. Language: Use simple, plain English without unnecessary jargon.
+        3. Formatting: 1-2 sentence high-level overview followed by plain dash bullets (- ). Do NOT use bolding, asterisks (* or **), markdown headers (#), or extra markup.
+        4. Section Context & Main Points: Preserve chapter numbers or main topic headings at the start of each bullet point (e.g., "- Chapter 1 (Basic Values): ..."). Explain the core ideas, actionable takeaways, and underlying reasoning for each section rather than just giving a high-level title statement.
+        5. Depth: Cover key sub-points, core arguments, and critical takeaways thoroughly so the student gets actionable insights.
+        
+        Document Text:
+        ${contentSample}`,
         });
 
-        summary = response.text?.trim() || null;
+        const rawSummary = response.text?.trim() || null;
+        summary = rawSummary ? rawSummary.replace(/\0/g, "") : null;
       } catch (aiErr: any) {
         console.error("Gemini API Exec Error Details:", aiErr?.message);
         summary = "Summary generation unavailable at this moment.";

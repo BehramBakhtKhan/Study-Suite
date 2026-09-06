@@ -11,8 +11,9 @@ import {
   FileText,
   Calendar,
   Sparkles,
-  AlignLeft,
-  AlertCircle
+  AlertCircle,
+  Download,
+  BookOpen,
 } from "lucide-react";
 
 export default function DocumentDetailPage({
@@ -53,10 +54,10 @@ export default function DocumentDetailPage({
             <h2 className="text-xl font-bold text-white">Unable to load document</h2>
             <p className="text-sm text-slate-400">{error || "Document not found"}</p>
             <Link
-              href="/"
+              href="/documents"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-white transition-colors"
             >
-              <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+              <ArrowLeft className="w-4 h-4" /> Back to Documents
             </Link>
           </div>
         </main>
@@ -65,17 +66,17 @@ export default function DocumentDetailPage({
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex overflow-hidden">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex overflow-hidden relative">
       <Sidebar />
 
-      <main className="flex-1 ml-64 h-screen flex flex-col">
+      <main className="flex-1 ml-64 h-screen flex flex-col overflow-y-auto custom-scrollbar">
         {/* Top Header Bar */}
-        <header className="h-16 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md px-6 flex items-center justify-between shrink-0">
+        <header className="h-16 border-b border-slate-800/80 bg-slate-900/40 backdrop-blur-md px-8 flex items-center justify-between shrink-0 sticky top-0 z-10">
           <div className="flex items-center gap-4">
             <Link
-              href="/"
+              href="/documents"
               className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
-              title="Back"
+              title="Back to Documents"
             >
               <ArrowLeft className="w-4 h-4" />
             </Link>
@@ -83,71 +84,66 @@ export default function DocumentDetailPage({
             <div>
               <div className="flex items-center gap-2">
                 <FileText className="w-4 h-4 text-indigo-400" />
-                <h1 className="text-base font-bold text-white truncate max-w-md">
+                <h1 className="text-base font-bold text-white truncate max-w-lg">
                   {selectedDoc.title}
                 </h1>
               </div>
               <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
-                <Calendar className="w-3 h-3" />
+                <Calendar className="w-3.5 h-3.5" />
                 Uploaded on {new Date(selectedDoc.createdAt).toLocaleDateString()}
               </p>
             </div>
           </div>
 
-          <span className="text-xs px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-medium">
-            Active Workspace
-          </span>
+          <div className="flex items-center gap-3">
+            {selectedDoc.filePath && (
+              <a
+                href={selectedDoc.filePath}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 text-xs px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium transition-colors border border-slate-700/50"
+              >
+                <Download className="w-3.5 h-3.5" /> View PDF File
+              </a>
+            )}
+            <span className="text-xs px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-medium">
+              Document Summary
+            </span>
+          </div>
         </header>
 
-        {/* Full-Screen Workspace Grid */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden">
-
-          {/* Left Column: Document Summary & Extracted Content */}
-          <div className="lg:col-span-7 p-6 overflow-y-auto space-y-6 border-r border-slate-800/80">
-            {/* Summary Card */}
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4 shadow-xl">
-              <div className="flex items-center gap-2 text-indigo-400 border-b border-slate-800/80 pb-3">
-                <Sparkles className="w-5 h-5" />
-                <h2 className="text-lg font-bold text-white">AI Summary</h2>
+        {/* Content Container */}
+        <div className="max-w-5xl w-full mx-auto p-8 space-y-6">
+          {/* Status Indicator Banner */}
+          <div className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400">
+                <BookOpen className="w-5 h-5" />
               </div>
-              <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-line bg-slate-950/60 p-5 rounded-2xl border border-slate-800/80">
-                {selectedDoc.summary || "No summary generated for this document."}
+              <div>
+                <h3 className="text-sm font-semibold text-white">Document Processed</h3>
+                <p className="text-xs text-slate-400">
+                  Full context has been indexed. Use the floating Ask AI button to start chatting.
+                </p>
               </div>
-            </div>
-
-            {/* Extracted Text Card */}
-            {selectedDoc.extractedText && (
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4 shadow-xl">
-                <div className="flex items-center gap-2 text-slate-400 border-b border-slate-800/80 pb-3">
-                  <AlignLeft className="w-5 h-5" />
-                  <h2 className="text-base font-semibold text-white">Extracted Text Content</h2>
-                </div>
-                <div className="max-h-96 overflow-y-auto text-xs text-slate-400 font-mono leading-relaxed whitespace-pre-wrap bg-slate-950/80 p-4 rounded-2xl border border-slate-800/80 custom-scrollbar">
-                  {selectedDoc.extractedText}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Right Column: Embedded Chat Terminal */}
-          <div className="lg:col-span-5 bg-slate-900/30 flex flex-col h-full overflow-hidden">
-            <div className="p-4 border-b border-slate-800 bg-slate-900/60 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-indigo-400">
-                <Sparkles className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                  Document Assistant
-                </span>
-              </div>
-              <span className="text-[10px] text-slate-500 font-mono">Gemini 2.5 Flash</span>
-            </div>
-
-            {/* Full-height Chat Container */}
-            <div className="flex-1 overflow-hidden p-4">
-              <DocumentChatModal documentId={id} />
             </div>
           </div>
 
+          {/* AI Summary Card */}
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-6 shadow-xl">
+            <div className="flex items-center gap-2 text-indigo-400 border-b border-slate-800/80 pb-4">
+              <Sparkles className="w-5 h-5" />
+              <h2 className="text-lg font-bold text-white">AI Overview & Summary</h2>
+            </div>
+
+            <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-line bg-slate-950/60 p-6 rounded-2xl border border-slate-800/80">
+              {selectedDoc.summary || "No summary generated for this document."}
+            </div>
+          </div>
         </div>
+
+        {/* Floating AI Chat Modal Button */}
+        <DocumentChatModal documentId={id} />
       </main>
     </div>
   );
