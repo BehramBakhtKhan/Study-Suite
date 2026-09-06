@@ -1,6 +1,5 @@
 "use client";
 
-
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import { useQuizRunner } from "@/hooks/useQuizRunner";
@@ -55,17 +54,17 @@ export default function QuizPage({ params }: QuizPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex relative">
       <Sidebar />
 
       <main className="flex-1 ml-64 p-8 flex flex-col items-center min-h-screen">
-        <div className="w-full max-w-3xl space-y-8 my-auto">
+        <div className="w-full max-w-3xl space-y-8 my-auto pb-12">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-slate-800 pb-6">
             <div>
               <h1 className="text-2xl font-bold text-white">{activeQuiz.title}</h1>
               <p className="text-xs text-slate-400 mt-1">
-                {/* {questions.length} Questions total */}
+                {questions.length} Questions total
               </p>
             </div>
             {submittedScore !== null && (
@@ -96,8 +95,8 @@ export default function QuizPage({ params }: QuizPageProps) {
                           key={optIdx}
                           onClick={() => handleSelectOption(qKey, optIdx)}
                           className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-all flex items-center justify-between ${isSelected
-                            ? "border-indigo-500 bg-indigo-500/10 text-white font-medium"
-                            : "border-slate-800 bg-slate-950/40 hover:bg-slate-800/50 text-slate-300"
+                              ? "border-indigo-500 bg-indigo-500/10 text-white font-medium"
+                              : "border-slate-800 bg-slate-950/40 hover:bg-slate-800/50 text-slate-300"
                             }`}
                         >
                           <span>{opt}</span>
@@ -137,7 +136,22 @@ export default function QuizPage({ params }: QuizPageProps) {
           </div>
         </div>
       </main>
+
+      {/* Floating Bottom Right Score Badge */}
+      {submittedScore !== null && (
+        <div className="fixed bottom-6 right-6 z-40 flex items-center gap-3 px-5 py-3 rounded-2xl bg-slate-900/90 border border-indigo-500/30 text-white shadow-2xl backdrop-blur-md">
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Final Result</span>
+            <span className="text-base font-bold text-indigo-400">
+              {submittedScore} <span className="text-xs text-slate-500">/ {questions.length}</span>
+            </span>
+          </div>
+          <div className="h-7 w-px bg-slate-800" />
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+            {Math.round((submittedScore / questions.length) * 100)}%
+          </span>
+        </div>
+      )}
     </div>
   );
 }
-
