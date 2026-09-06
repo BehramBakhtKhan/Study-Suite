@@ -1,0 +1,71 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+model User {
+  id           String        @id @default(uuid())
+  username     String        
+  email        String        @unique
+  passwordHash String        @map("password_hash")
+  role         Role          @default(STUDENT)
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  documents    Document[]
+  attempts     QuizAttempt[]
+
+  @@map("users")
+}
+
+model Document {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  title         String
+  filePath      String   @map("file_path")
+  extractedText String   @map("extracted_text") @db.Text
+  summary       String?  @db.Text
+  textHash      String?  @map("text_hash")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quizzes Quiz[]
+
+  @@map("documents")
+}
+
+
+model Quiz {
+  id         String   @id @default(uuid())
+  documentId String   @map("document_id")
+  title      String
+  questions  Json
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  document Document      @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  attempts QuizAttempt[]
+
+  @@map("quizzes")
+}
+
+model QuizAttempt {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  quizId         String   @map("quiz_id")
+  score          Int
+  totalQuestions Int      @map("total_questions")
+  aiFeedback     String?  @map("ai_feedback") @db.Text
+  submittedAt    DateTime @default(now()) @map("submitted_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@map("quiz_attempts")
+}
