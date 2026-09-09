@@ -3,14 +3,14 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { LoginSchema } from "@/lib/validatons/auth/auth";
 import { generateAccessToken, generateRefreshToken } from "@/lib/auth/token";
-import { logger } from "@/lib/logger"; // 👈 Make sure this path points to your logger file!
+// import { logger } from "@/lib/logger"; // 👈 Make sure this path points to your logger file!
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
     // 🟢 Log the incoming attempt (DO NOT log raw passwords for security!)
-    logger.info({ email: body?.email }, "🔑 Login attempt initiated");
+    // logger.info({ email: body?.email }, "🔑 Login attempt initiated");
 
     // 1. Validate request body
     const validation = LoginSchema.safeParse(body);
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
       const errorMessage = validation.error.issues[0].message;
 
       // ⚠️ Log data validation failures as warnings
-      logger.warn({ error: errorMessage }, "⚠️ Login payload validation failed");
+      // logger.warn({ error: errorMessage }, "⚠️ Login payload validation failed");
 
       return NextResponse.json(
         { error: errorMessage },
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
     if (!user) {
       // ⚠️ Log invalid emails as warnings (helps identify brute-force enumeration attacks)
-      logger.warn({ email }, "❌ Login failed: Email not found");
+      // logger.warn({ email }, "❌ Login failed: Email not found");
 
       return NextResponse.json(
         { error: "Invalid email or password" },
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
       // ⚠️ Log wrong password events as warnings
-      logger.warn({ email, userId: user.id }, "❌ Login failed: Incorrect password");
+      // logger.warn({ email, userId: user.id }, "❌ Login failed: Incorrect password");
 
       return NextResponse.json(
         { error: "Invalid email or password" },
@@ -96,12 +96,12 @@ export async function POST(req: NextRequest) {
     });
 
     // 🟢 Log successful logins to keep an audit trail
-    logger.info({ userId: user.id, email: user.email }, "🎉 Login successful, cookies dispatched");
+    // logger.info({ userId: user.id, email: user.email }, "🎉 Login successful, cookies dispatched");
 
     return response;
   } catch (error) {
     // 🔴 Crucial change: Replaced console.error with your strict error tracker
-    logger.error({ err: error }, "🚨 Unhandled critical error during login route execution");
+    // logger.error({ err: error }, "🚨 Unhandled critical error during login route execution");
 
     return NextResponse.json(
       { error: "Internal server error" },

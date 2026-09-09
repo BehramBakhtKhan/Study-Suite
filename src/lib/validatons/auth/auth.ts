@@ -11,7 +11,7 @@ export const SignupSchema = z.object({
 
 export const LoginSchema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(1, "Password is required"),
+  password: z.string().min(5, "Password min length is 5 char"),
 });
 
 // +++  What SignupInput Means
