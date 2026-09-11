@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     const userId = getUserIdFromCookie(req);
     if (!userId) {
       return NextResponse.json(
-        { error: "Access token missing or invalid" },
+        { error: "Access token missing or invalid" }, 
         { status: 401 }
       );
     }
@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ documents }, { status: 200 });
   } catch (error) {
-    console.error("GET /api/documents Error:", error);
+    // console.error("GET /api/documents Error:", error);
     return NextResponse.json(
       { error: "Failed to retrieve documents" },
       { status: 500 }
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
       const parsedPdf = await pdf(buffer);
       rawText = parsedPdf.text ? parsedPdf.text.trim() : "";
     } catch (parseErr) {
-      console.error("PDF Parsing Error:", parseErr);
+      // console.error("PDF Parsing Error:", parseErr);
       return NextResponse.json(
         { error: "Failed to parse text from the PDF file" },
         { status: 422 }
@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (existingDoc) {
-      console.log("Duplicate Document Detected...");
+      // console.log("Duplicate Document Detected...");
       const existingCharCount = existingDoc.extractedText.length;
       const lengthDifference =
         Math.abs(existingCharCount - incomingCharCount) / existingCharCount;
@@ -211,7 +211,7 @@ export async function POST(req: NextRequest) {
         const rawSummary = response.text?.trim() || null;
         summary = rawSummary ? rawSummary.replace(/\0/g, "") : null;
       } catch (aiErr: any) {
-        console.error("Gemini API Exec Error Details:", aiErr?.message);
+        // console.error("Gemini API Exec Error Details:", aiErr?.message);
         summary = "Summary generation unavailable at this moment.";
       }
     } else {
@@ -232,7 +232,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ document }, { status: 201 });
   } catch (error: any) {
-    console.error("POST /api/documents Error:", error);
+    // console.error("POST /api/documents Error:", error);
     return NextResponse.json(
       { error: error?.message || "Internal server error during processing" },
       { status: 500 }
@@ -282,7 +282,7 @@ export async function DELETE(req: NextRequest) {
       { status: 200 }
     );
   } catch (error: any) {
-    console.error("DELETE /api/documents Error:", error);
+    // console.error("DELETE /api/documents Error:", error);
     return NextResponse.json(
       { error: "Failed to delete documents" },
       { status: 500 }

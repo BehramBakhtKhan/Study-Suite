@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const refreshToken = req.cookies.get("refreshToken")?.value;
 
     if (!refreshToken) {
-      console.log("❌ Refresh failed: No refreshToken cookie found in request");
+      // console.log("❌ Refresh failed: No refreshToken cookie found in request");
       return NextResponse.json(
         { error: "Refresh token missing" },
         { status: 401 }
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!user) {
-      console.log("❌ Refresh failed: User not found in DB");
+      // console.log("❌ Refresh failed: User not found in DB");
       return NextResponse.json(
         { error: "User no longer exists" },
         { status: 401 }
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("❌ Refresh verification failed:", error);
+    // console.error("❌ Refresh verification failed:", error);
     return NextResponse.json(
       { error: "Invalid or expired refresh token" },
       { status: 401 }
