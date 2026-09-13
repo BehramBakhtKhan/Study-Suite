@@ -1,16 +1,20 @@
-// jest.config.ts
+import type { Config } from 'jest'
 import nextJest from 'next/jest.js'
 
 const createJestConfig = nextJest({
-  dir: './', // Tells Next.js where your app is to look for configs
+  dir: './',
 })
 
-const config = {
+const config: Config = {
   testEnvironment: 'node',
-  // 🚀 FIX: This tells Jest to translate "@/*" into your "src/*" folder paths
+  coverageProvider: 'v8',
+  // Translates "@/*" path aliases correctly
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  // Runs database cleanup hooks before each integration test
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
 }
 
 export default createJestConfig(config)
+
