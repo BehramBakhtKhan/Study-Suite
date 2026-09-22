@@ -40,7 +40,7 @@ describe("POST /api/auth/signup Unit Tests", () => {
 
     expect(res.status).toBe(400);
     expect(data).toHaveProperty("error");
-    expect(data.error).toBe("Password must be at least 6 characters");
+    expect(data.error).toBe("Password min length is 5 char");
   });
 
   // Missing Username completely

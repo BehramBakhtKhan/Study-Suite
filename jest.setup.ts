@@ -2,9 +2,17 @@ import { prisma } from "@/lib/prisma";
 
 // Helper to truncate/delete data across all tables in order
 export async function clearDatabase() {
-  const tablenames = await prisma.$queryRaw<
-    Array<{ tablename: string }>
-  >`SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename != '_prisma_migrations';`;
+  // old one
+  // const tablenames = await prisma.$queryRaw<
+  //   Array<{ tablename: string }>
+  // >`SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename != '_prisma_migrations';`;
+
+  // new one 
+  const tablenames = await prisma.$queryRaw<Array<{ tablename: string }>>`
+  SELECT tablename::text 
+  FROM pg_tables 
+  WHERE schemaname='public' AND tablename != '_prisma_migrations';
+`;
 
   const tables = tablenames
     .map(({ tablename }) => `"${tablename}"`)
