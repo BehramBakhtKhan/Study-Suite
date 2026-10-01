@@ -192,7 +192,7 @@ export async function POST(req: NextRequest) {
     if (apiKey) {
       try {
         const ai = new GoogleGenAI({ apiKey });
-
+        
         const response = await ai.models.generateContent({
           model: "gemini-3.6-flash",
           contents: `You are an expert study assistant. Summarize the following document excerpt for a student in detail.
